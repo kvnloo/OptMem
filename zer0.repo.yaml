@@ -1,0 +1,63 @@
+version: 1
+repo: kvnloo/OptMem
+id: optmem
+kind: suite
+summary: Lightweight permanent-memory substrate with an append-only positional log, rebuildable summary tree, bounded wake view, exact recall, and explicit tree navigation.
+
+architecture:
+  subsystems:
+    - id: append-only-log
+      name: Append-only memory log
+      kind: memory
+      summary: Stores fixed-width memory records in LOG.txt where position is stable identity and prior records are never rewritten.
+      paths:
+        - memo
+
+    - id: summary-tree
+      name: Rebuildable summary tree
+      kind: compression
+      summary: Builds binary summary nodes over log ranges as a cache that can be forgotten and reconstructed from the append-only source log.
+      paths:
+        - memo
+      depends_on: [append-only-log]
+
+    - id: bounded-wake
+      name: Bounded wake projection
+      kind: context
+      summary: Projects a configurable bounded reading view at session start without changing storage or rebuilding history.
+      paths:
+        - memo
+      depends_on: [append-only-log, summary-tree]
+
+    - id: exact-recall
+      name: Exact recall and zoom
+      kind: retrieval
+      summary: Supports regex recall over raw memories plus explicit binary-tree zoom from summaries back toward source records.
+      paths:
+        - memo
+      depends_on: [append-only-log, summary-tree]
+
+  provides_interfaces: []
+  consumes_interfaces: []
+  produces_representations: []
+  consumes_representations: []
+
+  boundaries:
+    owns:
+      - append-only local memory representation
+      - rebuildable summary-tree cache
+      - bounded startup projection
+      - exact recall and tree navigation
+    not_here:
+      - Zer0 source-memory authority
+      - cross-harness provenance policy
+      - answer-support verification
+      - z0intelligence ContextPacket semantics
+
+  evidence:
+    docs:
+      - README.md
+      - WINDOWS.md
+    tests:
+      - test.py
+    schemas: []
